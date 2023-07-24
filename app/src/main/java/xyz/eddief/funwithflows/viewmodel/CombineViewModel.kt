@@ -1,39 +1,31 @@
 package xyz.eddief.funwithflows.viewmodel
 
-import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.mapLatest
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.stateIn
-import kotlinx.coroutines.flow.update
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.flow.transform
+import kotlinx.coroutines.flow.transformLatest
 import xyz.eddief.funwithflows.DisplayUiState
+import xyz.eddief.funwithflows.customErrorLogging
+import xyz.eddief.funwithflows.customLogging
 
-class CombineViewModel : ViewModel(), DisplayViewModel {
-
-    private val numberFlow = MutableStateFlow(0)
-    private val characterFlow = MutableStateFlow<Char?>(null)
-
+class CombineViewModel : DisplayViewModel2() {
     override val uiStateFlow: StateFlow<DisplayUiState> = combine(
         numberFlow.map { it.toString() },
-        characterFlow.filterNotNull().map { it.toString() }
+        alphabetFlow.map { it.toString() }
     ) { number: String, char: String ->
-        DisplayUiState.Content(number, char)
-    }.catch {
-        DisplayUiState.Error
-    }.stateIn(viewModelScope, SharingStarted.Eagerly, DisplayUiState.Loading(0))
-
-    override fun updateNumber() = viewModelScope.launch {
-        numberFlow.update { it + 1 }
-    }
-
-    override fun updateCharacter() = viewModelScope.launch {
-        val randomChar = randomChars.random()
-        characterFlow.emit(randomChar)
-    }
+        DisplayUiState.Content.NumberLetterContent(number, char)
+    }.catch<DisplayUiState> {t: Throwable ->
+        customErrorLogging("${t.message}")
+        emit(DisplayUiState.Error(t.message))
+    }.onEach {
+        customLogging("$it")
+    }.stateIn(viewModelScope, SharingStarted.Eagerly, DisplayUiState.Loading())
 }

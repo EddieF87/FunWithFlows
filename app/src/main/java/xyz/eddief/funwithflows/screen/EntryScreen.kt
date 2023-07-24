@@ -1,4 +1,4 @@
-package xyz.eddief.funwithflows
+package xyz.eddief.funwithflows.screen
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
@@ -12,26 +12,29 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import xyz.eddief.funwithflows.DisplaySection
 
 @Composable
-fun EntryScreen(onSectionClick: (Section) -> Unit) {
+fun EntryScreen(
+    displaySections: List<DisplaySection>,
+    onSectionClick: (DisplaySection) -> Unit) {
     LazyColumn(
         modifier = Modifier
             .fillMaxSize()
     ) {
-        items(Section.values()) {
+        items(displaySections) {
             EntrySection(
-                section = it,
+                displaySection = it,
                 onSectionClick = { onSectionClick(it) }
             )
         }
-
     }
 }
 
 @Composable
 fun EntrySection(
-    section: Section,
+    displaySection: DisplaySection,
     onSectionClick: () -> Unit
 ) {
     Box(
@@ -41,6 +44,6 @@ fun EntrySection(
             .padding(24.dp),
         contentAlignment = Alignment.Center
     ) {
-        Text(section.route)
+        Text(displaySection.route, fontSize = 40.sp)
     }
 }
